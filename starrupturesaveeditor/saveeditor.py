@@ -10,8 +10,8 @@ from pydantic import (
     validate_call,
     model_validator,
 )
-from typing import Any, Self
-import click
+from typing import Any, Self, Literal
+import typer
 import logging
 import structlog
 from datetime import timedelta
@@ -20,6 +20,22 @@ from datetime import timedelta
 # For sharing the way that crimson jar is messing the .sav files to prevent us to modify it...
 
 STAR_RUPTURE_STEAM_GAME_ID = 1631270
+SETTABLE_ATTRIBUTES = (
+    "health",
+    "energy",
+    "shield",
+    "hydration",
+    "calories",
+    "toxicity",
+    "radiation",
+    "heat",
+    "drain",
+    "corrosion",
+    "oxygen",
+    "medToolCharge",
+    "grenadeCharge",
+    "movementSpeedMultiplier",
+)
 
 logger = structlog.get_logger(__name__)
 logging.basicConfig(
@@ -217,29 +233,13 @@ class StarRupturePlayerAttribute(BaseModel):
     def validate_model(self) -> Self:
         if self.min < self.max:
             raise ValueError
+        if self.current < self.min or self.current > self.max:
+            raise ValueError
         return self
 
     @staticmethod
     def is_settable(name: str) -> bool:
-        return name in StarRupturePlayerAttribute.__SETTABLE_ATTRIBUTES
-
-    __SETTABLE_ATTRIBUTES = (
-        "health",
-        "energy",
-        "shield",
-        "hydration",
-        "calories",
-        "toxicity",
-        "radiation",
-        "heat",
-        "drain",
-        "corrosion",
-        "oxygen",
-        "medToolCharge",
-        "grenadeCharge",
-        "movementSpeedMultiplier",
-    )
-
+        return name in StarRupturePlayerAttribute.SETTABLE_ATTRIBUTES
 
 class StarRupturePlayer:
     def __init__(self, player_id: int, world: StarRuptureGame) -> None:
@@ -283,30 +283,22 @@ def migrate_from_testing(save_path: str, output_slot: str) -> None:
     world.save(output_slot)
 
 
-@click.group()
-def cli() -> None:
-    """StarRupture save tool"""
-    pass
+app = typer.Typer(help="StarRupture save tool")
 
 
-@cli.command()
-@click.argument("input_file")
-@click.argument("output_file")
-def decode(input_file, output_file) -> None:
+@app.command()
+def decode(input_file: str, output_file: str) -> None:
     """Decode .sav -> JSON"""
     StarRuptureGame.load(input_file).save_to_json(output_file)
 
 
-@cli.command()
-@click.argument("input_file")
-@click.argument("output_slot")
-def encode(input_file, output_slot) -> None:
+@app.command()
+def encode(input_file: str, output_slot: str) -> None:
     """Encode JSON -> .sav"""
     StarRuptureGame.load_json(input_file).save(output_slot)
 
 
-@cli.command()
-@click.argument("input_file")
+@app.command()
 def list_players(input_file: str) -> None:
     """List all players and their positions"""
     world = StarRuptureGame.load(input_file)
@@ -315,22 +307,15 @@ def list_players(input_file: str) -> None:
         logger.info("Player found", player_id=player_id, position=player.get_position())
 
 
-@cli.command()
-@click.argument("input_file")
-@click.argument("output_slot")
-@click.argument("player_id", type=int)
-@click.argument("property", type=str)
-@click.argument("min", type=int)
-@click.argument("max", type=int)
-@click.argument("current", type=int)
+@app.command()
 def set_player_attribute(
     input_file: str,
     output_slot: str,
     player_id: int,
-    property: str,
-    min: int,
-    max: int,
-    current: int,
+    property: Literal[*SETTABLE_ATTRIBUTES],
+    min:NonNegativeInt,
+    max: NonNegativeInt,
+    current: NonNegativeInt,
 ) -> None:
     """Set a survival attribute for a player"""
     world = StarRuptureGame.load(input_file)
@@ -341,16 +326,13 @@ def set_player_attribute(
     world.save(output_slot)
 
 
-@cli.command()
-@click.argument("save_slot")
-@click.argument("output_slot")
+@app.command()
 def migrate(save_slot: str, output_slot: str) -> None:
     """Run migration from testing branch to be able to play back on the main branch"""
     migrate_from_testing(save_slot, output_slot)
 
 
-@cli.command()
-@click.argument("input_file")
+@app.command()
 def list_corporations(input_file: str) -> None:
     """List all corporations and their stats"""
     world = StarRuptureGame.load(input_file)
@@ -364,10 +346,7 @@ def list_corporations(input_file: str) -> None:
         )
 
 
-@cli.command()
-@click.argument("input_file")
-@click.argument("output_slot")
-@click.argument("datapoints")
+@app.command()
 def set_datapoints(input_file: str, output_slot: str, datapoints: int) -> None:
     """Set the datapoints balance"""
     world = StarRuptureGame.load(input_file)
@@ -376,4 +355,4 @@ def set_datapoints(input_file: str, output_slot: str, datapoints: int) -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    app()

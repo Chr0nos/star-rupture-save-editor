@@ -62,26 +62,26 @@ uv run starrupturesaveeditor/saveeditor.py encode saves/Slot1.json saves/Slot1_e
 # Produces: saves/Slot1_edited.sav + saves/Slot1_edited.met
 ```
 
-### `list_players` — List players in a save
+### `list-players` — List players in a save
 
 Shows all player IDs and their current world positions.
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py list_players <input_file>
+uv run starrupturesaveeditor/saveeditor.py list-players <input_file>
 ```
 
 **Example:**
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py list_players saves/Slot1.sav
+uv run starrupturesaveeditor/saveeditor.py list-players saves/Slot1.sav
 ```
 
-### `set_player_attribute` — Modify a player survival stat
+### `set-player-attribute` — Modify a player survival stat
 
 Sets a survival attribute (health, energy, shield, etc.) for a specific player.
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py set_player_attribute <input_file> <output_slot> <player_id> <property> <min> <max> <current>
+uv run starrupturesaveeditor/saveeditor.py set-player-attribute <input_file> <output_slot> <player_id> <property> <min> <max> <current>
 ```
 
 **Settable attributes:** `health`, `energy`, `shield`, `hydration`, `calories`, `toxicity`, `radiation`, `heat`, `drain`, `corrosion`, `oxygen`, `medToolCharge`, `grenadeCharge`, `movementSpeedMultiplier`
@@ -89,35 +89,35 @@ uv run starrupturesaveeditor/saveeditor.py set_player_attribute <input_file> <ou
 **Example** — refill health for player 0:
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py set_player_attribute saves/Slot1.sav saves/Slot1_fixed 0 health 0 150 100
+uv run starrupturesaveeditor/saveeditor.py set-player-attribute saves/Slot1.sav saves/Slot1_fixed 0 health 0 150 100
 ```
 
-### `list_corporations` — List corporations
+### `list-corporations` — List corporations
 
 Shows all corporations with their level, reputation, and visibility.
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py list_corporations <input_file>
+uv run starrupturesaveeditor/saveeditor.py list-corporations <input_file>
 ```
 
 **Example:**
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py list_corporations saves/Slot1.sav
+uv run starrupturesaveeditor/saveeditor.py list-corporations saves/Slot1.sav
 ```
 
-### `set_datapoints` — Set datapoints balance
+### `set-datapoints` — Set datapoints balance
 
 Sets the player's datapoints (in-game currency).
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py set_datapoints <input_file> <output_slot> <datapoints>
+uv run starrupturesaveeditor/saveeditor.py set-datapoints <input_file> <output_slot> <datapoints>
 ```
 
 **Example:**
 
 ```bash
-uv run starrupturesaveeditor/saveeditor.py set_datapoints saves/Slot1.sav saves/Slot1_rich 99999
+uv run starrupturesaveeditor/saveeditor.py set-datapoints saves/Slot1.sav saves/Slot1_rich 99999
 ```
 
 ## Save file locations
