@@ -359,7 +359,7 @@ def migrate(save_slot: str, output_slot: str) -> None:
 
 
 @app.command()
-def list_corporations(input_file: str) -> None:
+def list_corporations(input_file: Path) -> None:
     """List all corporations and their stats"""
     world = StarRuptureGame.load(input_file)
     for corporation in world.get_corporations():
@@ -370,6 +370,7 @@ def list_corporations(input_file: str) -> None:
             reputation=corporation.reputation,
             hidden=corporation.hidden,
         )
+    logger.info("Global datapoints", points=world.get_datapoints())
 
 
 @app.command()
