@@ -337,6 +337,22 @@ def set_player_attribute(
 
 
 @app.command()
+def set_player_position(
+    input_file: Path,
+    output_slot: str,
+    player_id: int,
+    x: float,
+    y: float,
+    z: float,
+) -> None:
+    """Set the given player-id to new x, y, z position"""
+    world = StarRuptureGame.load(input_file)
+    player = world.get_player(player_id)
+    player.set_position(x, y, z)
+    world.save(output_slot)
+
+
+@app.command()
 def migrate(save_slot: str, output_slot: str) -> None:
     """Run migration from testing branch to be able to play back on the main branch"""
     migrate_from_testing(save_slot, output_slot)
