@@ -15,6 +15,7 @@ import typer
 import logging
 import structlog
 from datetime import timedelta
+import sys
 
 # Special thanks to https://github.com/AlienXAXS/StarRupture-Save-Manager
 # For sharing the way that crimson jar is messing the .sav files to prevent us to modify it...
@@ -99,8 +100,8 @@ class StarRuptureGame:
         self._key_path_delimiter = key_path_delimiter
 
     @classmethod
-    def load(cls, path: str) -> "StarRuptureGame":
-        extenssion = path.split(".")[-1]
+    def load(cls, path: Path) -> "StarRuptureGame":
+        extenssion = str(path).split(".")[-1]
         match extenssion:
             case "json":
                 return cls.load_json(path)
@@ -110,22 +111,22 @@ class StarRuptureGame:
                 raise ValueError(f"Unknow file extenssion {extenssion}")
 
     @classmethod
-    def load_json(cls, path: str) -> "StarRuptureGame":
+    def load_json(cls, path: Path) -> "StarRuptureGame":
         logger.info("Loading .json", path=path)
-        if not path.endswith(".json"):
+        if not str(path).endswith(".json"):
             raise ValueError
         return cls(world=json.loads(Path(path).read_text(encoding="utf-8")))
 
     @classmethod
-    def load_save(cls, path: str) -> "StarRuptureGame":
-        logger.info("Loading .sav", path=path)
-        if not path.endswith(".sav"):
+    def load_save(cls, source: Path) -> "StarRuptureGame":
+        logger.info("Loading .sav", source=source)
+        if not str(source).endswith(".sav"):
             raise ValueError
 
-        data = Path(path).read_bytes()
+        data = source.read_bytes()
         raw = zlib.decompress(data[4:])
         obj = json.loads(raw.decode("utf-8"))
-        logger.info("File loaded", path=path)
+        logger.info("File loaded", source=source)
         return cls(world=obj)
 
     @validate_call
@@ -141,8 +142,8 @@ class StarRuptureGame:
         logger.info("Save created", destination=sav_path)
 
     @validate_call
-    def save_to_json(self, destination: str) -> None:
-        Path(destination).write_text(
+    def save_to_json(self, destination: Path) -> None:
+        destination.write_text(
             json.dumps(self._obj, indent=2, ensure_ascii=False), encoding="utf-8"
         )
         logger.info("Saved game", destination=destination)
@@ -278,6 +279,9 @@ class StarRupturePlayer:
 
 
 def migrate_from_testing(save_path: str, output_slot: str) -> None:
+    if output_slot.endswith('.sav'):
+        logger.error("You have to use a SLOT, like saves/0")
+        sys.exit(1)
     world = StarRuptureGame.load(save_path)
     world.remove("gameVersion")
     world.replace("version", 2)
@@ -291,19 +295,22 @@ app = typer.Typer(help="StarRupture save tool")
 
 
 @app.command()
-def decode(input_file: str, output_file: str) -> None:
+def decode(input_file: Path, output_file: Path) -> None:
     """Decode .sav -> JSON"""
     StarRuptureGame.load(input_file).save_to_json(output_file)
 
 
 @app.command()
-def encode(input_file: str, output_slot: str) -> None:
+def encode(input_file: Path, output_slot: str) -> None:
     """Encode JSON -> .sav"""
+    if output_slot.endswith('.sav'):
+        logger.error("You have to use a SLOT, like saves/0")
+        sys.exit(1)
     StarRuptureGame.load_json(input_file).save(output_slot)
 
 
 @app.command()
-def list_players(input_file: str) -> None:
+def list_players(input_file: Path) -> None:
     """List all players and their positions"""
     world = StarRuptureGame.load(input_file)
     for player_id in world.get_player_ids():
@@ -313,7 +320,7 @@ def list_players(input_file: str) -> None:
 
 @app.command()
 def set_player_attribute(
-    input_file: str,
+    input_file: Path,
     output_slot: str,
     player_id: int,
     property: Literal[*SETTABLE_ATTRIBUTES],
