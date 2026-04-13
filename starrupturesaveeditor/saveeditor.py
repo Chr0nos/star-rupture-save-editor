@@ -374,7 +374,7 @@ def list_corporations(input_file: Path) -> None:
 
 
 @app.command()
-def set_datapoints(input_file: str, output_slot: str, datapoints: int) -> None:
+def set_datapoints(input_file: Path, output_slot: str, datapoints: int) -> None:
     """Set the datapoints balance"""
     world = StarRuptureGame.load(input_file)
     world.set_datapoints(datapoints)
