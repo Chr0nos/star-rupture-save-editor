@@ -1,0 +1,17 @@
+[project]
+name = "starrupturesaveeditor"
+version = "0.1.0"
+description = "Editor for Star Rutpure save files"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.3.2",
+    "lz4>=4.4.5",
+    "pydantic>=2.12.5",
+    "structlog>=25.5.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.12.0",
+]
