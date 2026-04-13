@@ -308,6 +308,7 @@ def encode(input_file, output_slot) -> None:
 @cli.command()
 @click.argument("input_file")
 def list_players(input_file: str) -> None:
+    """List all players and their positions"""
     world = StarRuptureGame.load(input_file)
     for player_id in world.get_player_ids():
         player = StarRupturePlayer(player_id, world)
@@ -331,6 +332,7 @@ def set_player_attribute(
     max: int,
     current: int,
 ) -> None:
+    """Set a survival attribute for a player"""
     world = StarRuptureGame.load(input_file)
     player = world.get_player(player_id)
     player.set_survival_attribute(
@@ -350,6 +352,7 @@ def migrate(save_slot: str, output_slot: str) -> None:
 @cli.command()
 @click.argument("input_file")
 def list_corporations(input_file: str) -> None:
+    """List all corporations and their stats"""
     world = StarRuptureGame.load(input_file)
     for corporation in world.get_corporations():
         logger.info(
@@ -366,6 +369,7 @@ def list_corporations(input_file: str) -> None:
 @click.argument("output_slot")
 @click.argument("datapoints")
 def set_datapoints(input_file: str, output_slot: str, datapoints: int) -> None:
+    """Set the datapoints balance"""
     world = StarRuptureGame.load(input_file)
     world.set_datapoints(datapoints)
     world.save(output_slot)
