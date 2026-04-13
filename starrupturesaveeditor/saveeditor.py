@@ -199,7 +199,9 @@ class StarRuptureGame:
         return list(players.keys())
 
     def get_player(self, player_id: int) -> "StarRupturePlayer":
-        if player_id not in self["itemData.GameStateData.allCharactersBaseSaveData"]:
+        known_player_ids = set(self["itemData.GameStateData.allCharactersBaseSaveData.allPlayersSaveData"].keys())
+        if str(player_id) not in known_player_ids:
+            logger.error("Player not in player", requeted=player_id, available=known_player_ids)
             raise ValueError
         player = StarRupturePlayer(player_id, self)
         return player
@@ -231,15 +233,17 @@ class StarRupturePlayerAttribute(BaseModel):
 
     @model_validator(mode="after")
     def validate_model(self) -> Self:
-        if self.min < self.max:
-            raise ValueError
-        if self.current < self.min or self.current > self.max:
-            raise ValueError
+        if self.min > self.max:
+            raise ValueError("min is higher than max")
+        if self.current < self.min:
+            raise ValueError("current is lowwe than min")
+        if self.current > self.max:
+            raise ValueError("current is higher than max")
         return self
 
     @staticmethod
     def is_settable(name: str) -> bool:
-        return name in StarRupturePlayerAttribute.SETTABLE_ATTRIBUTES
+        return name in SETTABLE_ATTRIBUTES
 
 class StarRupturePlayer:
     def __init__(self, player_id: int, world: StarRuptureGame) -> None:
@@ -320,9 +324,8 @@ def set_player_attribute(
     """Set a survival attribute for a player"""
     world = StarRuptureGame.load(input_file)
     player = world.get_player(player_id)
-    player.set_survival_attribute(
-        property, StarRupturePlayerAttribute(current=current, min=min, max=max)
-    )
+    values = StarRupturePlayerAttribute(current=current, min=min, max=max)
+    player.set_survival_attribute(property, values)
     world.save(output_slot)
 
 
